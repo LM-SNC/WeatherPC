@@ -15,14 +15,13 @@ public class MainMenuScreen implements Screen {
     SpriteBatch batch;
     OrthographicCamera camera;
     Texture startButtonTexture;
-    Texture exitButtonTexture;
     Texture ric;
     Texture backGroundTexture;
     Sprite startButtonSprite;
-  //  Sprite exitButtonSprite;
     Sprite backGroundSprite;
-    private static float BUTTON_RESIZE_FACTOR = 800f; // задаём относительный размер
-    private static float EXIT_VERT_POSITION_FACTOR = 4.2f; // задаём позицию кнопки exit
+    Texture vl1;
+    Texture vl2;
+
 
 
 
