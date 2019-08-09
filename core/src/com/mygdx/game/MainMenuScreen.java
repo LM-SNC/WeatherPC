@@ -22,7 +22,6 @@ public class MainMenuScreen implements Screen {
   //  Sprite exitButtonSprite;
     Sprite backGroundSprite;
     private static float BUTTON_RESIZE_FACTOR = 800f; // задаём относительный размер
-    private static float START_VERT_POSITION_FACTOR = 2.7f; // задаём позицию конпки start
     private static float EXIT_VERT_POSITION_FACTOR = 4.2f; // задаём позицию кнопки exit
 
 
@@ -44,11 +43,9 @@ public class MainMenuScreen implements Screen {
         backGroundTexture = new Texture(Gdx.files.internal("menubackground.jpg"));
         backGroundSprite = new Sprite(backGroundTexture);
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
-        exitButtonTexture = new Texture(Gdx.files.internal("exit_button.png"));
         startButtonSprite = new Sprite(startButtonTexture);
        // exitButtonSprite = new Sprite(exitButtonTexture);
         // устанавливаем размер и позиции
-        startButtonSprite.setSize(startButtonSprite.getWidth() *(width/BUTTON_RESIZE_FACTOR), startButtonSprite.getHeight()*(width/BUTTON_RESIZE_FACTOR));
         //exitButtonSprite.setSize(exitButtonSprite.getWidth() *(width/BUTTON_RESIZE_FACTOR), exitButtonSprite.getHeight()*(width/BUTTON_RESIZE_FACTOR));
         backGroundSprite.setSize(5,5);
         startButtonSprite.setPosition(1 , 1);
@@ -92,6 +89,7 @@ public class MainMenuScreen implements Screen {
         game.font.draw(game.batch, "Welcome", 100, 150);
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
         game.batch.draw(startButtonSprite, 1, 1);
+        game.font.draw(game.batch, "Volume ", 100, 200);
         handleTouch();
         game.batch.end();
 
