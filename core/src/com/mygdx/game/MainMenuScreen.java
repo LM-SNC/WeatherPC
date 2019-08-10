@@ -19,8 +19,6 @@ public class MainMenuScreen implements Screen {
     Texture backGroundTexture;
     Sprite startButtonSprite;
     Sprite backGroundSprite;
-    Texture vl1;
-    Texture vl2;
 
 
 
@@ -39,9 +37,12 @@ public class MainMenuScreen implements Screen {
         camera.setToOrtho(false);// временный вектор для "захвата" входных координат
         batch = new SpriteBatch();
         // инициализируем текстуры и спрайты
+
         backGroundTexture = new Texture(Gdx.files.internal("menubackground.jpg"));
         backGroundSprite = new Sprite(backGroundTexture);
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
+
+
         startButtonSprite = new Sprite(startButtonTexture);
        // exitButtonSprite = new Sprite(exitButtonTexture);
         // устанавливаем размер и позиции
@@ -88,7 +89,7 @@ public class MainMenuScreen implements Screen {
         game.font.draw(game.batch, "Welcome", 100, 150);
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
         game.batch.draw(startButtonSprite, 1, 1);
-        game.font.draw(game.batch, "Volume ", 100, 200);
+        game.font.draw(game.batch, "Volume ", 180, 240);
         handleTouch();
         game.batch.end();
 

@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -26,10 +28,14 @@ public class GameScreen implements Screen {
     OrthographicCamera camera;
     Texture dropImage;
     Texture bucketImage;
-    Rectangle nubesdrop;
+//    Rectangle Nubesdrop = new Rectangle();
     Rectangle bucket;
+    Texture pause;
+    Sprite pauseSprite;
+    Vector2 nubesx;
     Texture background1;
     Vector3 touchPos;
+    Array<Float> speedsForNubes;
     Array<Rectangle> raindrops;
     Array<Rectangle> nubesdrops;
     Texture exitButtonTexture;
@@ -38,7 +44,8 @@ public class GameScreen implements Screen {
     Texture over;
     int sp;
     int proebano;
-    int speedNube = 2;
+    public float volume = 0.1f;
+    int speedNube = MathUtils.random(0, 4);
     int dropsGatchered;
 
     Texture nubesImg;
@@ -53,16 +60,19 @@ public class GameScreen implements Screen {
         dropImage = new Texture("droplet.png");
         exitButtonTexture = new Texture(Gdx.files.internal("exit_button.png"));
         exitButtonSprite = new Sprite(exitButtonTexture);
+        pause = new Texture(Gdx.files.internal("pause.png"));
+        pauseSprite = new Sprite(pause);
         nubesImg = new Texture("nubes.png");
         background1 = new Texture("background1.png");
-        nubesdrop = new Rectangle();
-        exitButtonSprite.setPosition(-10 , 250);
+        exitButtonSprite.setPosition(-10, 250);
+        pauseSprite.setPosition(-10, 200);
         over = new Texture("over.png");
-
+        nubesx = new Vector2();
+        //nubesx.x = nubesImg.x;
 
         mp3 = Gdx.audio.newMusic(Gdx.files.internal("mp3.mp3"));
         mp3.setLooping(true);
-        mp3.setVolume(0.3f);
+        mp3.setVolume(volume);
         mp3.play();
         bucket = new Rectangle();
         bucket.x = 800 / 2 - 64 / 2;
@@ -70,12 +80,13 @@ public class GameScreen implements Screen {
         bucket.width = 0;
         bucket.height = 32;
 
+        speedsForNubes = new Array<>();
         raindrops = new Array<Rectangle>();
         spawnRaindrop();
         nubesdrops = new Array<Rectangle>();
         spawnNubes();
-
     }
+
 
     private void spawnRaindrop() {
         Rectangle raindrop = new Rectangle();
@@ -88,11 +99,14 @@ public class GameScreen implements Screen {
     }
 
     private void spawnNubes() {
+        Rectangle nubesdrop = new Rectangle();
         nubesdrop.x = MathUtils.random(0, 450);
         nubesdrop.y = 350;
         sp++;
+        speedsForNubes.add(MathUtils.random(1f, 5f));
         nubesdrops.add(nubesdrop);
     }
+
     void handleTouch() {
         Vector3 temp = new Vector3();
         // Проверяем были ли касание по экрану?
@@ -114,19 +128,27 @@ public class GameScreen implements Screen {
         }
     }
 
-
-
-
     @Override
     public void render(float delta) {
+//        for (Rectangle nubesdrop : nubesdrops) {
+        for (int k = 0; k < nubesdrops.size; k++) {
+            Rectangle nubesdrop = nubesdrops.get(k);
+            float speed = speedsForNubes.get(k);
+            nubesdrop.x += speed;
+            if (nubesdrop.x > 500 || nubesdrop.x < 0) {
+                speedsForNubes.set(k, -speed);
+            }
+        }
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
 
         game.batch.setProjectionMatrix(camera.combined);
-       MathUtils.random(0, 450);
+        MathUtils.random(0, 450);
+
         game.batch.begin();
+
 
         game.batch.draw(background1, 1, 1);
 
@@ -143,12 +165,14 @@ public class GameScreen implements Screen {
         if (sp < 3) spawnNubes();
 
         game.batch.draw(exitButtonSprite, -10, 250);
+        game.batch.draw(pauseSprite, 10, 200);
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
         }
-        for (Rectangle nubesdrop : nubesdrops) {
-            game.batch.draw(nubesImg, nubesdrop.x, nubesdrop.y);
+        for (Rectangle Nubesdrop : nubesdrops) {
+            game.batch.draw(nubesImg, Nubesdrop.x, Nubesdrop.y);
         }
+
         game.font.draw(game.batch, "Drops Collected: " + dropsGatchered, 0, 480);
         game.font.draw(game.batch, "Proebano: " + proebano + "/5", 0, 465);
 
@@ -182,14 +206,6 @@ public class GameScreen implements Screen {
                 iter.remove();
             }
         }
-        Iterator<Rectangle> iter1 = nubesdrops.iterator();
-        while (iter1.hasNext()) {
-            Rectangle nubesdrop = iter1.next();
-        }
-        nubesdrop.x += speedNube;
-        //if(nubesdrop.x > 500 || nubesdrop.x < 0){
-        //    speedNube = -speedNube;
-       // }
         if (proebano == 5) {
             gameOver = true;
         }
@@ -197,6 +213,12 @@ public class GameScreen implements Screen {
             proebano--;
         }
         handleTouch();
+
+
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+
+
+        }
     }
 
 
