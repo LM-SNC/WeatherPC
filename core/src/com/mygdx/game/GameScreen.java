@@ -1,6 +1,5 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -17,7 +16,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Iterator;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
 
 
 public class GameScreen implements Screen {
@@ -31,9 +36,13 @@ public class GameScreen implements Screen {
 //    Rectangle Nubesdrop = new Rectangle();
     Rectangle bucket;
     Texture pause;
+    File score;
     Sprite pauseSprite;
     Vector2 nubesx;
     Texture background1;
+    int Hscore;
+    PrintWriter scorewrite;
+    BufferedReader buff;
     Vector3 touchPos;
     Array<Float> speedsForNubes;
     Array<Rectangle> raindrops;
@@ -46,7 +55,6 @@ public class GameScreen implements Screen {
     int sp;
     int proebano;
     public float volume = 0.1f;
-    int speedNube = MathUtils.random(0, 4);
     int dropsGatchered;
 
     Texture nubesImg;
@@ -70,7 +78,17 @@ public class GameScreen implements Screen {
         over = new Texture("over.png");
         nubesx = new Vector2();
         //nubesx.x = nubesImg.x;
+        BufferedReader buff = null;
 
+        try {
+            score = new File("Score.txt");
+            if(!score.exists()){
+                score.createNewFile();
+            }
+
+        } catch (IOException error){
+            System.out.println("Error:" + error);
+        }
         mp3 = Gdx.audio.newMusic(Gdx.files.internal("mp3.mp3"));
         mp3.setLooping(true);
         mp3.setVolume(volume);
@@ -121,10 +139,7 @@ public class GameScreen implements Screen {
             // обработка касания по кнопке Stare
             if ((touchX >= exitButtonSprite.getX()) && touchX <= (exitButtonSprite.getX() + exitButtonSprite.getWidth()) && (touchY >= exitButtonSprite.getY()) && touchY <= (exitButtonSprite.getY() + exitButtonSprite.getHeight())) {
                 game.setScreen(new MainMenuScreen(game)); // Переход к экрану игры
-                dropImage.dispose();
-                bucketImage.dispose();
-                mp3.dispose();
-                nubesImg.dispose();
+                dispose();
             }
         }
     }
@@ -140,6 +155,15 @@ public class GameScreen implements Screen {
                 speedsForNubes.set(k, -speed);
             }
         }
+
+
+        try {
+            score();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -147,7 +171,6 @@ public class GameScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         MathUtils.random(0, 450);
-
         game.batch.begin();
         game.batch.draw(background1, 1, 1);
         if (gameOver == false) {
@@ -168,7 +191,7 @@ public class GameScreen implements Screen {
 
 
         if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
-        if (sp < 4) spawnNubes();
+        if (sp < MathUtils.random(1, 6)) spawnNubes();
 
 
 
@@ -179,6 +202,7 @@ public class GameScreen implements Screen {
 
         game.font.draw(game.batch, "Drops Collected: " + dropsGatchered, 0, 480);
         game.font.draw(game.batch, "Proebano: " + proebano + "/5", 0, 465);
+        game.font.draw(game.batch, "Hscore: " + Hscore , 0, 445);
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -244,7 +268,26 @@ public class GameScreen implements Screen {
         proebano = 0;
         dropsGatchered = 0;
     }
+    public void score() throws IOException {
+        String line;
 
+
+
+
+        buff = new BufferedReader(new FileReader("Score.txt"));
+        while ((line =  buff.readLine()) != null) {
+               System.out.print(line);
+                Hscore = Integer.parseInt(line);
+
+        }
+        if(dropsGatchered > Hscore){
+            Hscore = dropsGatchered;
+        }
+        buff.close();
+        scorewrite = new PrintWriter(score);
+        scorewrite.print(Hscore);
+        scorewrite.close();
+    }
     @Override
     public void pause() {
 
@@ -266,6 +309,8 @@ public class GameScreen implements Screen {
         bucketImage.dispose();
         mp3.dispose();
         nubesImg.dispose();
+        exitButtonTexture.dispose();
+
     }
 
     @Override
