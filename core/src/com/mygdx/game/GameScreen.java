@@ -104,6 +104,12 @@ public class GameScreen implements Screen {
         spawnRaindrop();
         nubesdrops = new Array<Rectangle>();
         spawnNubes();
+        try {
+            score();
+            scoreWrite();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -124,6 +130,7 @@ public class GameScreen implements Screen {
         sp++;
         speedsForNubes.add(MathUtils.random(0.8f, 1.2f));
         nubesdrops.add(nubesdrop);
+
     }
 
     void handleTouch() {
@@ -157,11 +164,6 @@ public class GameScreen implements Screen {
         }
 
 
-        try {
-            score();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
 
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
@@ -176,6 +178,13 @@ public class GameScreen implements Screen {
         if (gameOver == false) {
             game.batch.draw(bucketImage, bucket.x, bucket.y);
         } else if (gameOver == true) {
+            try {
+                score();
+                scoreWrite();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             game.batch.draw(over, 130, 20);
 
             game.font.draw(game.batch, "Pess f", 400, 100);
@@ -275,15 +284,17 @@ public class GameScreen implements Screen {
 
 
         buff = new BufferedReader(new FileReader("Score.txt"));
-        while ((line =  buff.readLine()) != null) {
-               System.out.print(line);
+            while ((line =  buff.readLine()) != null) {
                 Hscore = Integer.parseInt(line);
 
         }
+        buff.close();
+
+    }
+    public void scoreWrite() throws FileNotFoundException {
         if(dropsGatchered > Hscore){
             Hscore = dropsGatchered;
         }
-        buff.close();
         scorewrite = new PrintWriter(score);
         scorewrite.print(Hscore);
         scorewrite.close();
@@ -310,6 +321,12 @@ public class GameScreen implements Screen {
         mp3.dispose();
         nubesImg.dispose();
         exitButtonTexture.dispose();
+        try {
+            score();
+            scoreWrite();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

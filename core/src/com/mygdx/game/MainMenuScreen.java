@@ -5,9 +5,15 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class MainMenuScreen implements Screen {
 
@@ -16,8 +22,11 @@ public class MainMenuScreen implements Screen {
     OrthographicCamera camera;
     Texture startButtonTexture;
     Texture ric;
+    BufferedReader buff;
     Texture backGroundTexture;
     Sprite startButtonSprite;
+    String line;
+    int Hscore;
     Sprite backGroundSprite;
 
 
@@ -37,12 +46,23 @@ public class MainMenuScreen implements Screen {
         camera.setToOrtho(false);// временный вектор для "захвата" входных координат
         batch = new SpriteBatch();
         // инициализируем текстуры и спрайты
-
         backGroundTexture = new Texture(Gdx.files.internal("menubackground.jpg"));
         backGroundSprite = new Sprite(backGroundTexture);
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
+        BufferedReader buff = null;
+        try {
+            buff = new BufferedReader(new FileReader("Score.txt"));
+            while ((line =  buff.readLine()) != null) {
+                Hscore = Integer.parseInt(line);
 
+            }
+            buff.close();
 
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         startButtonSprite = new Sprite(startButtonTexture);
        // exitButtonSprite = new Sprite(exitButtonTexture);
         // устанавливаем размер и позиции
@@ -91,9 +111,11 @@ public class MainMenuScreen implements Screen {
         game.batch.draw(startButtonSprite, 1, 1);
         game.font.draw(game.batch, "Volume ", 180, 240);
         handleTouch();
+        game.font.draw(game.batch, " Лучший результат: " + Hscore , 0, 445);
         game.batch.end();
 
     }
+
     @Override
     public void resize(int width, int height) {
 
