@@ -40,6 +40,7 @@ public class GameScreen implements Screen {
     Array<Rectangle> nubesdrops;
     Texture exitButtonTexture;
     long lastDropTime;
+
     boolean gameOver = false;
     Texture over;
     int sp;
@@ -58,14 +59,14 @@ public class GameScreen implements Screen {
         touchPos = new Vector3();
         bucketImage = new Texture("bucket.png");
         dropImage = new Texture("droplet.png");
-        exitButtonTexture = new Texture(Gdx.files.internal("exit_button.png"));
+        exitButtonTexture = new Texture("exit_button2.png");
         exitButtonSprite = new Sprite(exitButtonTexture);
-        pause = new Texture(Gdx.files.internal("pause.png"));
-        pauseSprite = new Sprite(pause);
+//        pause = new Texture(Gdx.files.internal("pause.png"));
+//        pauseSprite = new Sprite(pause);
         nubesImg = new Texture("nubes.png");
         background1 = new Texture("background1.png");
-        exitButtonSprite.setPosition(-10, 250);
-        pauseSprite.setPosition(-10, 200);
+        exitButtonSprite.setPosition(704, 430);
+       // pauseSprite.setPosition(-10, 200);
         over = new Texture("over.png");
         nubesx = new Vector2();
         //nubesx.x = nubesImg.x;
@@ -100,10 +101,10 @@ public class GameScreen implements Screen {
 
     private void spawnNubes() {
         Rectangle nubesdrop = new Rectangle();
-        nubesdrop.x = MathUtils.random(0, 450);
+        nubesdrop.x = MathUtils.random(0, 500);
         nubesdrop.y = 350;
         sp++;
-        speedsForNubes.add(MathUtils.random(1f, 5f));
+        speedsForNubes.add(MathUtils.random(0.8f, 1.2f));
         nubesdrops.add(nubesdrop);
     }
 
@@ -148,24 +149,16 @@ public class GameScreen implements Screen {
         MathUtils.random(0, 450);
 
         game.batch.begin();
-
-
         game.batch.draw(background1, 1, 1);
-
         if (gameOver == false) {
             game.batch.draw(bucketImage, bucket.x, bucket.y);
         } else if (gameOver == true) {
             game.batch.draw(over, 130, 20);
-            bucket.x = -500;
+
             game.font.draw(game.batch, "Pess f", 400, 100);
         }
 
 
-        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
-        if (sp < 3) spawnNubes();
-
-        game.batch.draw(exitButtonSprite, -10, 250);
-        game.batch.draw(pauseSprite, 10, 200);
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
         }
@@ -173,9 +166,19 @@ public class GameScreen implements Screen {
             game.batch.draw(nubesImg, Nubesdrop.x, Nubesdrop.y);
         }
 
+
+        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
+        if (sp < 4) spawnNubes();
+
+
+
+
+        game.batch.draw(exitButtonSprite, 704, 430);
+//        game.batch.draw(pauseSprite, 10, 200);
+
+
         game.font.draw(game.batch, "Drops Collected: " + dropsGatchered, 0, 480);
         game.font.draw(game.batch, "Proebano: " + proebano + "/5", 0, 465);
-
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -202,7 +205,12 @@ public class GameScreen implements Screen {
                 iter.remove();
             }
             if (raindrop.overlaps(bucket)) {
-                dropsGatchered++;
+                if (gameOver == false) {
+                    dropsGatchered++;
+                }
+                else {
+
+                }
                 iter.remove();
             }
         }
@@ -219,12 +227,22 @@ public class GameScreen implements Screen {
 
 
         }
+        if (Gdx.input.isKeyPressed(Input.Keys.F) && gameOver == true){
+            restart();
+        }
     }
 
 
     @Override
     public void resize(int width, int height) {
 
+    }
+
+    public void restart(){
+        gameOver = false;
+        raindrops.clear();
+        proebano = 0;
+        dropsGatchered = 0;
     }
 
     @Override
