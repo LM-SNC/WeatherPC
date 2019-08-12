@@ -12,6 +12,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
@@ -42,6 +44,7 @@ public class GameScreen implements Screen {
     Texture background1;
     int Hscore;
     PrintWriter scorewrite;
+    boolean gamepause;
     BufferedReader buff;
     Vector3 touchPos;
     Array<Float> speedsForNubes;
@@ -56,7 +59,6 @@ public class GameScreen implements Screen {
     int proebano;
     public float volume = 0.1f;
     int dropsGatchered;
-
     Texture nubesImg;
 
 
@@ -69,16 +71,14 @@ public class GameScreen implements Screen {
         dropImage = new Texture("droplet.png");
         exitButtonTexture = new Texture("exit_button2.png");
         exitButtonSprite = new Sprite(exitButtonTexture);
-//        pause = new Texture(Gdx.files.internal("pause.png"));
-//        pauseSprite = new Sprite(pause);
+        pause = new Texture(Gdx.files.internal("pause.png"));
+        pauseSprite = new Sprite(pause);
         nubesImg = new Texture("nubes.png");
         background1 = new Texture("background1.png");
         exitButtonSprite.setPosition(704, 430);
-       // pauseSprite.setPosition(-10, 200);
+        pauseSprite.setPosition(-10, 200);
         over = new Texture("over.png");
         nubesx = new Vector2();
-        //nubesx.x = nubesImg.x;
-        BufferedReader buff = null;
 
         try {
             score = new File("Score.txt");
@@ -92,7 +92,7 @@ public class GameScreen implements Screen {
         mp3 = Gdx.audio.newMusic(Gdx.files.internal("mp3.mp3"));
         mp3.setLooping(true);
         mp3.setVolume(volume);
-        mp3.play();
+            mp3.play();
         bucket = new Rectangle();
         bucket.x = 800 / 2 - 64 / 2;
         bucket.y = 20;
@@ -114,13 +114,15 @@ public class GameScreen implements Screen {
 
 
     private void spawnRaindrop() {
-        Rectangle raindrop = new Rectangle();
-        raindrop.x = MathUtils.random(0, 800 - 64);
-        raindrop.y = 480;
-        raindrop.width = 64;
-        raindrop.height = 64;
-        raindrops.add(raindrop);
-        lastDropTime = TimeUtils.nanoTime();
+        if(!gamepause) {
+            Rectangle raindrop = new Rectangle();
+            raindrop.x = MathUtils.random(0, 800 - 64);
+            raindrop.y = 480;
+            raindrop.width = 64;
+            raindrop.height = 64;
+            raindrops.add(raindrop);
+            lastDropTime = TimeUtils.nanoTime();
+        }
     }
 
     private void spawnNubes() {
@@ -148,23 +150,33 @@ public class GameScreen implements Screen {
                 game.setScreen(new MainMenuScreen(game)); // Переход к экрану игры
                 dispose();
             }
+            if ((touchX >= pauseSprite.getX()) && touchX <= (pauseSprite.getX() + pauseSprite.getWidth()) && (touchY >= pauseSprite.getY()) && touchY <= (pauseSprite.getY() + pauseSprite.getHeight())) {
+                gamepause = true;
+
+            }
         }
     }
 
     @Override
     public void render(float delta) {
+        if(!gamepause) {
 //        for (Rectangle nubesdrop : nubesdrops) {
-        for (int k = 0; k < nubesdrops.size; k++) {
-            Rectangle nubesdrop = nubesdrops.get(k);
-            float speed = speedsForNubes.get(k);
-            nubesdrop.x += speed;
-            if (nubesdrop.x > 500 || nubesdrop.x < 0) {
-                speedsForNubes.set(k, -speed);
+            for (int k = 0; k < nubesdrops.size; k++) {
+                Rectangle nubesdrop = nubesdrops.get(k);
+                float speed = speedsForNubes.get(k);
+                nubesdrop.x += speed;
+                if (nubesdrop.x > 500 || nubesdrop.x < 0) {
+                    speedsForNubes.set(k, -speed);
+                }
             }
         }
 
 
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+
+            gamepause = !gamepause;
+        }
 
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -185,6 +197,7 @@ public class GameScreen implements Screen {
                 e.printStackTrace();
             }
 
+
             game.batch.draw(over, 130, 20);
 
             game.font.draw(game.batch, "Pess f", 400, 100);
@@ -199,19 +212,24 @@ public class GameScreen implements Screen {
         }
 
 
-        if (TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
+        if (TimeUtils.nanoTime() - lastDropTime > 1000000000 && !gamepause) spawnRaindrop();
         if (sp < MathUtils.random(1, 6)) spawnNubes();
+        if(dropsGatchered > Hscore) {
+            Hscore = dropsGatchered;
+        }
 
 
 
 
         game.batch.draw(exitButtonSprite, 704, 430);
-//        game.batch.draw(pauseSprite, 10, 200);
+        if(!gamepause) {
+            game.batch.draw(pauseSprite, 10, 200);
+        }
 
 
         game.font.draw(game.batch, "Drops Collected: " + dropsGatchered, 0, 480);
         game.font.draw(game.batch, "Proebano: " + proebano + "/5", 0, 465);
-        game.font.draw(game.batch, "Hscore: " + Hscore , 0, 445);
+        game.font.draw(game.batch, "High score: " + Hscore , 0, 445);
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -220,8 +238,8 @@ public class GameScreen implements Screen {
             bucket.x = (int) (touchPos.x - 64 / 2);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) bucket.x -= 400 * Gdx.graphics.getDeltaTime();
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) bucket.x += 400 * Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && !gamepause) bucket.x -= 400 * Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyPressed(Input.Keys.D) && !gamepause) bucket.x += 400 * Gdx.graphics.getDeltaTime();
         if (bucket.x == 0) {
             bucket.x = 1;
         }
@@ -232,7 +250,9 @@ public class GameScreen implements Screen {
         Iterator<Rectangle> iter = raindrops.iterator();
         while (iter.hasNext()) {
             Rectangle raindrop = iter.next();
-            raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+            if(!gamepause) {
+                raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+            }
             if (raindrop.y + 64 < 0) {
                 proebano++;
                 iter.remove();
@@ -240,9 +260,6 @@ public class GameScreen implements Screen {
             if (raindrop.overlaps(bucket)) {
                 if (gameOver == false) {
                     dropsGatchered++;
-                }
-                else {
-
                 }
                 iter.remove();
             }
@@ -256,10 +273,7 @@ public class GameScreen implements Screen {
         handleTouch();
 
 
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
 
-
-        }
         if (Gdx.input.isKeyPressed(Input.Keys.F) && gameOver == true){
             restart();
         }

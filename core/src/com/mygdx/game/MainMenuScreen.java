@@ -5,15 +5,16 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class MainMenuScreen implements Screen {
 
@@ -21,8 +22,10 @@ public class MainMenuScreen implements Screen {
     SpriteBatch batch;
     OrthographicCamera camera;
     Texture startButtonTexture;
+    File score;
     Texture ric;
     BufferedReader buff;
+    Texture gold;
     Texture backGroundTexture;
     Sprite startButtonSprite;
     String line;
@@ -32,11 +35,13 @@ public class MainMenuScreen implements Screen {
 
 
 
-    public MainMenuScreen(final Drop gam) {
+    public MainMenuScreen(final Drop gam){
         game = gam;
+
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
         // получаем размеры экрана устройства пользователя и записываем их в переменнные высоты и ширины
+
         float height= Gdx.graphics.getHeight();
         float width = Gdx.graphics.getWidth();
         // устанавливаем переменные высоты и ширины в качестве области просмотра нашей игры
@@ -45,11 +50,11 @@ public class MainMenuScreen implements Screen {
         ric = new Texture("ric.png");
         camera.setToOrtho(false);// временный вектор для "захвата" входных координат
         batch = new SpriteBatch();
+        gold = new Texture(Gdx.files.internal("gold.png"));
         // инициализируем текстуры и спрайты
         backGroundTexture = new Texture(Gdx.files.internal("menubackground.jpg"));
         backGroundSprite = new Sprite(backGroundTexture);
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
-        BufferedReader buff = null;
         try {
             buff = new BufferedReader(new FileReader("Score.txt"));
             while ((line =  buff.readLine()) != null) {
@@ -72,7 +77,6 @@ public class MainMenuScreen implements Screen {
         //exitButtonSprite.setPosition((width/2f -exitButtonSprite.getWidth()/2) , width/EXIT_VERT_POSITION_FACTOR);
         // устанавливаем прозрачность заднего фон
         backGroundSprite.setAlpha(0.1f);
-
     }
 
     @Override
@@ -99,9 +103,9 @@ public class MainMenuScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glViewport(0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 
         camera.update();
-
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         game.batch.draw(backGroundSprite,1,1);
@@ -109,9 +113,9 @@ public class MainMenuScreen implements Screen {
         game.font.draw(game.batch, "Welcome", 100, 150);
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
         game.batch.draw(startButtonSprite, 1, 1);
-        game.font.draw(game.batch, "Volume ", 180, 240);
         handleTouch();
-        game.font.draw(game.batch, " Лучший результат: " + Hscore , 0, 445);
+        game.font.draw(game.batch, " High score: " + Hscore , 0, 445);
+        game.batch.draw(gold,1,300);
         game.batch.end();
 
     }
@@ -140,4 +144,5 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
 
     }
+
 }
