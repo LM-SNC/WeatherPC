@@ -12,11 +12,14 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
-
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,19 +29,17 @@ import java.util.Iterator;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 
-
 public class GameScreen implements Screen {
-
     final Drop game;
     Music mp3;
     Sprite exitButtonSprite;
     OrthographicCamera camera;
     Texture dropImage;
     Texture bucketImage;
-//    Rectangle Nubesdrop = new Rectangle();
     Rectangle bucket;
     Texture pause;
     File score;
+    Texture bg_pause;
     Sprite pauseSprite;
     Vector2 nubesx;
     Texture background1;
@@ -47,6 +48,12 @@ public class GameScreen implements Screen {
     boolean gamepause;
     BufferedReader buff;
     Vector3 touchPos;
+    Texture button1;
+    Texture button2;
+    Texture button3;
+    Sprite button1S;
+    Sprite button2S;
+    Sprite button3S;
     Array<Float> speedsForNubes;
     Array<Rectangle> raindrops;
     Array<Rectangle> nubesdrops;
@@ -57,10 +64,10 @@ public class GameScreen implements Screen {
     Texture over;
     int sp;
     int proebano;
-    public float volume = 0.1f;
+    Stage stage;
+    float volume = 1f;
     int dropsGatchered;
     Texture nubesImg;
-
 
     public GameScreen(final Drop gam) {
         this.game = gam;
@@ -76,23 +83,26 @@ public class GameScreen implements Screen {
         nubesImg = new Texture("nubes.png");
         background1 = new Texture("background1.png");
         exitButtonSprite.setPosition(704, 430);
+        bg_pause = new Texture(Gdx.files.internal("bg_pause.png"));
+        button1 = new Texture("resume.png");
+        button1S = new Sprite(button1);
         pauseSprite.setPosition(-10, 200);
+//        button1S.setPosition(button1.getWidth() + 50, button1.getHeight());
         over = new Texture("over.png");
         nubesx = new Vector2();
 
         try {
             score = new File("Score.txt");
-            if(!score.exists()){
+            if (!score.exists()) {
                 score.createNewFile();
             }
-
-        } catch (IOException error){
+        } catch (IOException error) {
             System.out.println("Error:" + error);
         }
+
         mp3 = Gdx.audio.newMusic(Gdx.files.internal("mp3.mp3"));
         mp3.setLooping(true);
-        mp3.setVolume(volume);
-            mp3.play();
+        mp3.play();
         bucket = new Rectangle();
         bucket.x = 800 / 2 - 64 / 2;
         bucket.y = 20;
@@ -104,17 +114,39 @@ public class GameScreen implements Screen {
         spawnRaindrop();
         nubesdrops = new Array<Rectangle>();
         spawnNubes();
+
         try {
             score();
             scoreWrite();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        stage = new Stage();
+        Skin skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
+
+        final Slider slider = new Slider(0f, 0.9f, 20, false, skin);
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent changeEvent, Actor actor) {
+                Slider slider = (Slider) actor;
+                slider.getValue();
+                volume = slider.getValue();
+
+            }
+        });
+        Container<Slider> container = new Container<Slider>(slider);
+        container.setTransform(true);   // for enabling scaling and rotation
+        container.size(100, 60);
+        container.setOrigin(container.getWidth() / 2, container.getHeight() / 2);
+        container.setPosition(200, 400);
+        container.setScale(1);  //scale according to your requirement
+
+        stage.addActor(container);
     }
 
-
     private void spawnRaindrop() {
-        if(!gamepause) {
+        if (!gamepause) {
             Rectangle raindrop = new Rectangle();
             raindrop.x = MathUtils.random(0, 800 - 64);
             raindrop.y = 480;
@@ -132,7 +164,6 @@ public class GameScreen implements Screen {
         sp++;
         speedsForNubes.add(MathUtils.random(0.8f, 1.2f));
         nubesdrops.add(nubesdrop);
-
     }
 
     void handleTouch() {
@@ -154,13 +185,25 @@ public class GameScreen implements Screen {
                 gamepause = true;
 
             }
+            if ((touchX >= button1S.getX()) && touchX <= (button1S.getX() + button1S.getWidth()) && (touchY >= button1S.getY()) && touchY <= (button1S.getY() + button1S.getHeight())) {
+                gamepause = false;
+
+            }
+        }
+    }
+
+    public void inputHandler(float delta) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            gamepause = !gamepause;
         }
     }
 
     @Override
     public void render(float delta) {
-        if(!gamepause) {
-//        for (Rectangle nubesdrop : nubesdrops) {
+        Gdx.gl.glClearColor(0, 0, 0.2f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (!gamepause) {
             for (int k = 0; k < nubesdrops.size; k++) {
                 Rectangle nubesdrop = nubesdrops.get(k);
                 float speed = speedsForNubes.get(k);
@@ -171,22 +214,14 @@ public class GameScreen implements Screen {
             }
         }
 
-
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-
-            gamepause = !gamepause;
-        }
-
-        Gdx.gl.glClearColor(0, 0, 0.2f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        mp3.setVolume(volume);
         camera.update();
 
         game.batch.setProjectionMatrix(camera.combined);
         MathUtils.random(0, 450);
         game.batch.begin();
         game.batch.draw(background1, 1, 1);
+
         if (gameOver == false) {
             game.batch.draw(bucketImage, bucket.x, bucket.y);
         } else if (gameOver == true) {
@@ -196,13 +231,9 @@ public class GameScreen implements Screen {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
             game.batch.draw(over, 130, 20);
-
             game.font.draw(game.batch, "Pess f", 400, 100);
         }
-
 
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
@@ -211,25 +242,34 @@ public class GameScreen implements Screen {
             game.batch.draw(nubesImg, Nubesdrop.x, Nubesdrop.y);
         }
 
-
-        if (TimeUtils.nanoTime() - lastDropTime > 1000000000 && !gamepause) spawnRaindrop();
-        if (sp < MathUtils.random(1, 6)) spawnNubes();
-        if(dropsGatchered > Hscore) {
+        if (TimeUtils.nanoTime() - lastDropTime > 1000000000 && !gamepause) {
+            spawnRaindrop();
+        }
+        if (sp < MathUtils.random(1, 6)) {
+            spawnNubes();
+        }
+        if (dropsGatchered > Hscore) {
             Hscore = dropsGatchered;
         }
 
-
-
-
         game.batch.draw(exitButtonSprite, 704, 430);
-        if(!gamepause) {
+        if (!gamepause) {
             game.batch.draw(pauseSprite, 10, 200);
         }
 
-
         game.font.draw(game.batch, "Drops Collected: " + dropsGatchered, 0, 480);
+        game.font.draw(game.batch, "Drops Collected: " + volume, 0, 400);
         game.font.draw(game.batch, "Proebano: " + proebano + "/5", 0, 465);
-        game.font.draw(game.batch, "High score: " + Hscore , 0, 445);
+        game.font.draw(game.batch, "High score: " + Hscore, 0, 445);
+        //   if(gamepause){
+        //     game.batch.draw(bg_pause,200,120);
+        // }
+
+        if (gamepause) {
+            stage.act();
+            stage.draw();
+            game.batch.draw(button1, Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, button1.getWidth(), button1.getHeight());
+        }
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -238,30 +278,35 @@ public class GameScreen implements Screen {
             bucket.x = (int) (touchPos.x - 64 / 2);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && !gamepause) bucket.x -= 400 * Gdx.graphics.getDeltaTime();
-        if (Gdx.input.isKeyPressed(Input.Keys.D) && !gamepause) bucket.x += 400 * Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && !gamepause)
+            bucket.x -= 400 * Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyPressed(Input.Keys.D) && !gamepause)
+            bucket.x += 400 * Gdx.graphics.getDeltaTime();
         if (bucket.x == 0) {
             bucket.x = 1;
         }
-        if (bucket.x < 0) bucket.x = 0;
-        if (bucket.x > 800 - 64) bucket.x = 800 - 64;
-
+        if (bucket.x < 0) {
+            bucket.x = 0;
+        }
+        if (bucket.x > 800 - 64) {
+            bucket.x = 800 - 64;
+        }
 
         Iterator<Rectangle> iter = raindrops.iterator();
-        while (iter.hasNext()) {
-            Rectangle raindrop = iter.next();
-            if(!gamepause) {
+        if (!gamepause) {
+            while (iter.hasNext()) {
+                Rectangle raindrop = iter.next();
                 raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-            }
-            if (raindrop.y + 64 < 0) {
-                proebano++;
-                iter.remove();
-            }
-            if (raindrop.overlaps(bucket)) {
-                if (gameOver == false) {
-                    dropsGatchered++;
+                if (raindrop.y + 64 < 0) {
+                    proebano++;
+                    iter.remove();
                 }
-                iter.remove();
+                if (raindrop.overlaps(bucket)) {
+                    if (gameOver == false) {
+                        dropsGatchered++;
+                    }
+                    iter.remove();
+                }
             }
         }
         if (proebano == 5) {
@@ -271,65 +316,62 @@ public class GameScreen implements Screen {
             proebano--;
         }
         handleTouch();
-
-
-
-        if (Gdx.input.isKeyPressed(Input.Keys.F) && gameOver == true){
+        if (Gdx.input.isKeyPressed(Input.Keys.F) && gameOver == true) {
             restart();
         }
     }
 
-
     @Override
     public void resize(int width, int height) {
-
+        Gdx.app.log("GameScreen::resize()", "width:" + width + " height:" + height);
     }
 
-    public void restart(){
+    public void restart() {
+        Gdx.app.log("GameScreen::restart()", "--");
         gameOver = false;
         raindrops.clear();
         proebano = 0;
         dropsGatchered = 0;
     }
+
     public void score() throws IOException {
+        Gdx.app.log("GameScreen::score()", "--");
         String line;
-
-
-
-
-        buff = new BufferedReader(new FileReader("Score.txt"));
-            while ((line =  buff.readLine()) != null) {
-                Hscore = Integer.parseInt(line);
-
+        buff = new BufferedReader(new FileReader("score.txt"));
+        while ((line = buff.readLine()) != null) {
+            Hscore = Integer.parseInt(line);
         }
         buff.close();
-
     }
+
     public void scoreWrite() throws FileNotFoundException {
-        if(dropsGatchered > Hscore){
+        Gdx.app.log("GameScreen::scoreWrite()", "--");
+        if (dropsGatchered > Hscore) {
             Hscore = dropsGatchered;
         }
         scorewrite = new PrintWriter(score);
         scorewrite.print(Hscore);
         scorewrite.close();
     }
+
     @Override
     public void pause() {
-
+        Gdx.app.log("GameScreen::pause()", "--");
     }
 
     @Override
     public void resume() {
-
+        Gdx.app.log("GameScreen::resume()", "--");
     }
 
     @Override
     public void hide() {
-
+        Gdx.app.log("GameScreen::hide()", "--");
     }
 
     @Override
     public void dispose() {
+        Gdx.app.log("GameScreen::dispose()", "--");
         dropImage.dispose();
         bucketImage.dispose();
         mp3.dispose();
@@ -346,5 +388,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        Gdx.app.log("GameScreen::show()", "--");
+        Gdx.input.setInputProcessor(stage);
     }
 }

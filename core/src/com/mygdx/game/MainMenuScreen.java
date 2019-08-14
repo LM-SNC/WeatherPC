@@ -14,10 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 public class MainMenuScreen implements Screen {
-
     final Drop game;
     SpriteBatch batch;
     OrthographicCamera camera;
@@ -29,23 +27,22 @@ public class MainMenuScreen implements Screen {
     Texture backGroundTexture;
     Sprite startButtonSprite;
     String line;
+    int gg;
     int Hscore;
     Sprite backGroundSprite;
 
-
-
-
-    public MainMenuScreen(final Drop gam){
+    public MainMenuScreen(final Drop gam) {
+        Gdx.app.log("MainMenuScreen::MainMenuScreen()", "gam:" + gam);
         game = gam;
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
         // получаем размеры экрана устройства пользователя и записываем их в переменнные высоты и ширины
 
-        float height= Gdx.graphics.getHeight();
+        float height = Gdx.graphics.getHeight();
         float width = Gdx.graphics.getWidth();
         // устанавливаем переменные высоты и ширины в качестве области просмотра нашей игры
-        camera = new OrthographicCamera(width,height);
+        camera = new OrthographicCamera(width, height);
         // этим методом мы центруем камеру на половину высоты и половину ширины
         ric = new Texture("ric.png");
         camera.setToOrtho(false);// временный вектор для "захвата" входных координат
@@ -57,23 +54,21 @@ public class MainMenuScreen implements Screen {
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
         try {
             buff = new BufferedReader(new FileReader("Score.txt"));
-            while ((line =  buff.readLine()) != null) {
+            while ((line = buff.readLine()) != null) {
                 Hscore = Integer.parseInt(line);
-
             }
             buff.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         startButtonSprite = new Sprite(startButtonTexture);
-       // exitButtonSprite = new Sprite(exitButtonTexture);
+        // exitButtonSprite = new Sprite(exitButtonTexture);
         // устанавливаем размер и позиции
         //exitButtonSprite.setSize(exitButtonSprite.getWidth() *(width/BUTTON_RESIZE_FACTOR), exitButtonSprite.getHeight()*(width/BUTTON_RESIZE_FACTOR));
-        backGroundSprite.setSize(5,5);
-        startButtonSprite.setPosition(1 , 1);
+        backGroundSprite.setSize(5, 5);
+        startButtonSprite.setPosition(1, 1);
         //exitButtonSprite.setPosition((width/2f -exitButtonSprite.getWidth()/2) , width/EXIT_VERT_POSITION_FACTOR);
         // устанавливаем прозрачность заднего фон
         backGroundSprite.setAlpha(0.1f);
@@ -81,68 +76,68 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
-
+        Gdx.app.log("MainMenuScreen::show()", "--");
     }
-    void handleTouch(){
+
+    void handleTouch() {
         Vector3 temp = new Vector3();
         // Проверяем были ли касание по экрану?
-        if(Gdx.input.justTouched()) {
+        if (Gdx.input.justTouched()) {
             // Получаем координаты касания и устанавливаем эти значения в временный вектор
-            temp.set(Gdx.input.getX(),Gdx.input.getY(), 0);
+            temp.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             // получаем координаты касания относительно области просмотра нашей камеры
             camera.unproject(temp);
             float touchX = temp.x;
-            float touchY= temp.y;
+            float touchY = temp.y;
             // обработка касания по кнопке Stare
-            if((touchX>=startButtonSprite.getX()) && touchX<= (startButtonSprite.getX()+startButtonSprite.getWidth()) && (touchY>=startButtonSprite.getY()) && touchY<=(startButtonSprite.getY()+startButtonSprite.getHeight()) ){
+            if ((touchX >= startButtonSprite.getX()) && touchX <= (startButtonSprite.getX() + startButtonSprite.getWidth()) && (touchY >= startButtonSprite.getY()) && touchY <= (startButtonSprite.getY() + startButtonSprite.getHeight())) {
                 game.setScreen(new GameScreen(game)); // Переход к экрану игры
             }
         }
     }
+
     @Override
     public void render(float delta) {
+//        Gdx.app.log("MainMenuScreen::render()", "delta:" + delta);
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        Gdx.gl.glViewport(0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        game.batch.draw(backGroundSprite,1,1);
-        game.batch.draw(ric,200,0);
+        game.batch.draw(backGroundSprite, 1, 1);
+        game.batch.draw(ric, 200, 0);
         game.font.draw(game.batch, "Welcome", 100, 150);
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
         game.batch.draw(startButtonSprite, 1, 1);
         handleTouch();
-        game.font.draw(game.batch, " High score: " + Hscore , 0, 445);
-        game.batch.draw(gold,1,300);
+        game.font.draw(game.batch, " High score: " + Hscore, 0, 445);
+        game.batch.draw(gold, 1, 480 - 32, 32, 32);
         game.batch.end();
-
     }
 
     @Override
     public void resize(int width, int height) {
-
+        Gdx.app.log("MainMenuScreen::resize()", "width:" + width + " height:" + height);
     }
 
     @Override
     public void pause() {
-
+        Gdx.app.log("MainMenuScreen::pause()", "--");
     }
 
     @Override
     public void resume() {
-
+        Gdx.app.log("MainMenuScreen::resume()", "--");
     }
 
     @Override
     public void hide() {
-
+        Gdx.app.log("MainMenuScreen::hide()", "--");
     }
 
     @Override
     public void dispose() {
-
+        Gdx.app.log("MainMenuScreen::dispose()", "--");
     }
-
 }
