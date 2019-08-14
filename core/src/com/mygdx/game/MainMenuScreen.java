@@ -53,7 +53,7 @@ public class MainMenuScreen implements Screen {
         backGroundSprite = new Sprite(backGroundTexture);
         startButtonTexture = new Texture(Gdx.files.internal("start_button.png"));
         try {
-            buff = new BufferedReader(new FileReader("Score.txt"));
+            buff = new BufferedReader(new FileReader("score.txt"));
             while ((line = buff.readLine()) != null) {
                 Hscore = Integer.parseInt(line);
             }
